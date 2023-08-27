@@ -269,6 +269,9 @@ export default class Pricelist extends EventEmitter {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this.priceSource.bindHandlePriceEvent(this.boundHandlePriceChange);
         }
+        log.debug('Attempting to start scheduleAutoUpdateOldPrices');
+        this.scheduleAutoUpdateOldPrices();
+        log.debug('Started scheduleAutoUpdateOldPrices!');
     }
 
     hasPrice({ priceKey, onlyEnabled = false }: { priceKey: string; onlyEnabled?: boolean }): boolean {
@@ -1363,6 +1366,37 @@ export default class Pricelist extends EventEmitter {
         }
 
         return prices;
+    }
+
+    private autoUpdateOldPrices(): void {
+        log.debug('Updating old prices...');
+        const old = this.getOld;
+        this.updateOldPrices(old)
+            .then(() => {
+                log.debug('Done updating old prices...');
+            })
+            .catch(err => {
+                log.error('Error on autoUpdateOldPrices:', err);
+            });
+    }
+
+    private scheduleAutoUpdateOldPrices(): void {
+        let initialDelayMs = this.maxAge * 1000;
+
+        if (this.maxAge <= 3660) {
+            initialDelayMs = 3660 * 1000;
+            log.debug('Max age is less than 3660 seconds, setting to 3660 seconds (1 hour + 60 seconds)');
+        }
+
+        // Schedule first update after initialDelayMs
+        setTimeout(() => {
+            this.autoUpdateOldPrices(); // Update old prices
+
+            // Schedule subsequent updates every initialDelayMs
+            setInterval(() => {
+                this.autoUpdateOldPrices();
+            }, initialDelayMs);
+        }, initialDelayMs);
     }
 
     static transformPricesFromPricer(prices: Item[]): { [p: string]: Item } {
