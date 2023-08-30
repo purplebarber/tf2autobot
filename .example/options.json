@@ -444,6 +444,9 @@
         },
         "steamApis": {
             "enable": false
+        },
+        "purpleInventories": {
+            "enable": false
         }
     },
     "discordChat": {

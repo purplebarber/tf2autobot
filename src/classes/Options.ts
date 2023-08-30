@@ -488,6 +488,9 @@ export const DEFAULTS: JsonOptions = {
         },
         steamApis: {
             enable: false
+        },
+        purpleInventories: {
+            enable: false
         }
     },
 
@@ -1599,6 +1602,7 @@ interface ManualReview extends OnlyEnable {
 interface InventoryApis {
     steamSupply?: OnlyEnable;
     steamApis?: OnlyEnable;
+    purpleInventories?: OnlyEnable;
 }
 
 // ------------ Discord Chat ---------------

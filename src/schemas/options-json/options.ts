@@ -1503,9 +1503,12 @@ export const optionsSchema: jsonschema.Schema = {
                 },
                 steamApis: {
                     $ref: '#/definitions/only-enable'
+                },
+                purpleInventories: {
+                    $ref: '#/definitions/only-enable'
                 }
             },
-            required: ['steamSupply', 'steamApis'],
+            required: ['steamSupply', 'steamApis', 'purpleInventories'],
             additionalProperties: false
         },
         discordChat: {
