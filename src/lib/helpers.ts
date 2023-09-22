@@ -17,7 +17,7 @@ export default class Helper {
     private readonly ecp = new EasyCopyPaste();
 
     public getEasyCopyPasteString(itemName: string, intent: 'buy' | 'sell'): string {
-        return this.ecp.toEasyCopyPasteString(itemName, intent, true);
+        return this.ecp.toEasyCopyPasteString(itemName, intent, false);
     }
 
     public getEasyCopyPasteDescriptor(easyCopyPasteString: string): TransactionDescriptor {

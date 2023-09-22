@@ -1043,10 +1043,10 @@ export default class Bot {
                                         token: this.options.bptfAccessToken,
                                         userID: this.userID,
                                         userAgent:
-                                            'TF2Autobot' +
+                                            'PurpleBot' +
                                             (this.options.useragentHeaderCustom !== ''
                                                 ? ` - ${this.options.useragentHeaderCustom}`
-                                                : ' - Run your own bot for free'),
+                                                : ' - A TF2Autobot fork'),
                                         schema: this.schema
                                     });
 
