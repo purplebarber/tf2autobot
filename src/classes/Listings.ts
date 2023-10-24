@@ -13,6 +13,7 @@ import { PaintedNames } from './Options';
 import ListingManager from '@tf2autobot/bptf-listings';
 import getAttachmentName from '../lib/tools/getAttachmentName';
 import filterAxiosError from '@tf2autobot/filter-axios-error';
+import SKU from '@tf2autobot/tf2-sku';
 
 /**
  * used when remove all listings has failed once
@@ -94,6 +95,11 @@ export default class Listings {
         const invManager = this.bot.inventoryManager;
         const inventory = invManager.getInventory;
 
+        let goodMargin = true;
+        if (match) {
+            goodMargin = this.marginCheck(match);
+        }
+
         const amountCanBuy = invManager.amountCanTrade({
             priceKey,
             tradeIntent: 'buying',
@@ -152,9 +158,14 @@ export default class Listings {
                 }
                 doneSomething = true;
                 listing.remove();
-            } else if ((listing.intent === 0 && amountCanBuy <= 0) || (listing.intent === 1 && amountCanSell <= 0)) {
+            } else if (
+                (listing.intent === 0 && amountCanBuy <= 0) ||
+                (listing.intent === 1 && amountCanSell <= 0) ||
+                (!goodMargin && listing.intent === 0)
+            ) {
                 if (showLogs) {
-                    log.debug(`We are not ${listing.intent === 0 ? 'buying' : 'selling'} more, remove the listing.`);
+                    log.debug(`We are not ${listing.intent === 0 ? 'buying' : 'selling'} more, remove the listing.
+                     ${!goodMargin && listing.intent === 0 ? ' This item has a bad margin' : ''}`);
                 }
                 doneSomething = true;
                 listing.remove();
@@ -778,6 +789,44 @@ export default class Listings {
         }
 
         return string;
+    }
+
+    marginCheck(match: Entry): boolean {
+        const idealPercentage = 1.2;
+
+        if (match === null) {
+            return false;
+        }
+
+        // only include items with both buy and sell prices
+        if (match.buy === null || match.sell === null) {
+            return true;
+        }
+
+        const itemObject = SKU.fromString(match.sku);
+
+        // only include unusuals
+        if (itemObject.quality != 5) {
+            return true;
+        }
+
+        // exclude generic unusuals
+        if (itemObject.effect == null) {
+            return true;
+        }
+
+        // exclude unusuals under 10 keys
+        if (match.sell.keys < 10) {
+            return true;
+        }
+
+        const keyPrice = this.bot.pricelist.getKeyPrice.metal;
+        const buyPrice = match.buy.toValue(keyPrice);
+        const sellPrice = match.sell.toValue(keyPrice);
+        const percentageDifference = sellPrice / buyPrice;
+
+        // return true if the percentage difference is greater than or equal to the ideal percentage
+        return percentageDifference >= idealPercentage;
     }
 }
 
