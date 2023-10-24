@@ -253,7 +253,7 @@ export default class Listings {
                 ? invManager.isCanAffordToBuy(matchNew.buy, invManager.getInventory)
                 : true;
 
-            if (!hasBuyListing && amountCanBuy > 0 && canAffordToBuy) {
+            if (!hasBuyListing && amountCanBuy > 0 && canAffordToBuy && goodMargin) {
                 if (showLogs) {
                     log.debug(`We have no buy order and we can buy more items, create buy listing.`);
                 }
