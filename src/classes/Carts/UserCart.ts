@@ -520,16 +520,20 @@ export default class UserCart extends Cart {
             }
 
             let findByPartialSku = false;
+            let elevatedStrange = false;
             const item_object = SKU.fromString(sku);
             if (item_object.quality == 5 && !item_object.effect) {
                 log.debug('Generic Unusual in their cart, finding by partial sku');
                 findByPartialSku = true;
+                if (item_object.quality2 == 11) {
+                    elevatedStrange = true;
+                }
             }
 
             let theirAssetids: string[];
             let amount = this.getTheirCount(sku);
             if (findByPartialSku) {
-                theirAssetids = theirInventory.findByPartialSku(sku, true);
+                theirAssetids = theirInventory.findByPartialSku(sku, true, elevatedStrange);
                 if (theirAssetids.length > 0) {
                     sku = theirInventory.findByAssetid(theirAssetids[0]);
                 }
@@ -762,14 +766,18 @@ export default class UserCart extends Cart {
 
             const item_object = SKU.fromString(sku);
             let findByPartialSku = false;
+            let elevatedStrange = false;
             if (item_object.quality == 5 && !item_object.effect) {
                 findByPartialSku = true;
+                if (item_object.quality2 == 11) {
+                    elevatedStrange = true;
+                }
             }
 
             let assetids: string[];
             const amount = this.their[sku];
             if (findByPartialSku) {
-                assetids = theirInventory.findByPartialSku(sku, true);
+                assetids = theirInventory.findByPartialSku(sku, true, elevatedStrange);
             } else {
                 assetids = theirInventory.findBySKU(sku, true);
             }
