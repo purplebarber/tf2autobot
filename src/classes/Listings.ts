@@ -164,8 +164,11 @@ export default class Listings {
                 (!goodMargin && listing.intent === 0)
             ) {
                 if (showLogs) {
-                    log.debug(`We are not ${listing.intent === 0 ? 'buying' : 'selling'} more, remove the listing.
-                     ${!goodMargin && listing.intent === 0 ? ' This item has a bad margin' : ''}`);
+                    log.debug(
+                        `We are not ${listing.intent === 0 ? 'buying' : 'selling'} more, remove the listing. ${
+                            !goodMargin && listing.intent === 0 ? ' This item has a bad margin' : ''
+                        }`
+                    );
                 }
                 doneSomething = true;
                 listing.remove();
