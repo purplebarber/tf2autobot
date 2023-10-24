@@ -514,7 +514,7 @@ export default class UserCart extends Cart {
         };
 
         // Add their items
-        for (const sku in this.their) {
+        for (let sku in this.their) {
             if (!Object.prototype.hasOwnProperty.call(this.their, sku)) {
                 continue;
             }
@@ -522,19 +522,22 @@ export default class UserCart extends Cart {
             let findByPartialSku = false;
             const item_object = SKU.fromString(sku);
             if (item_object.quality == 5 && !item_object.effect) {
+                log.debug('Generic Unusual in their cart, finding by partial sku');
                 findByPartialSku = true;
             }
 
-            let alteredMessage: string;
-
-            let amount = this.getTheirCount(sku);
             let theirAssetids: string[];
-
+            let amount = this.getTheirCount(sku);
             if (findByPartialSku) {
                 theirAssetids = theirInventory.findByPartialSku(sku, true);
+                if (theirAssetids.length > 0) {
+                    sku = theirInventory.findByAssetid(theirAssetids[0]);
+                }
             } else {
                 theirAssetids = theirInventory.findBySKU(sku, true);
             }
+
+            let alteredMessage: string;
             const theirAssetidsCount = theirAssetids.length;
 
             if (amount > theirAssetidsCount) {
@@ -757,8 +760,19 @@ export default class UserCart extends Cart {
                 continue;
             }
 
+            const item_object = SKU.fromString(sku);
+            let findByPartialSku = false;
+            if (item_object.quality == 5 && !item_object.effect) {
+                findByPartialSku = true;
+            }
+
+            let assetids: string[];
             const amount = this.their[sku];
-            let assetids = theirInventory.findBySKU(sku, true);
+            if (findByPartialSku) {
+                assetids = theirInventory.findByPartialSku(sku, true);
+            } else {
+                assetids = theirInventory.findBySKU(sku, true);
+            }
 
             const addToDupeCheckList =
                 this.bot.pricelist
