@@ -195,11 +195,26 @@ export default class Inventory {
         return nonTradable.concat(tradable).slice(0);
     }
 
-    findByPartialSku(partialSku: string, tradableOnly = true): string[] {
-        const skus = tradableOnly
-            ? Object.keys(this.tradable)
-            : Object.keys(this.tradable).concat(Object.keys(this.nonTradable));
-        return skus.filter(sku => sku.startsWith(partialSku));
+    findByPartialSku(partialSku: string, tradableOnly = true) {
+        const matchingSKUs = Object.keys(this.tradable)
+            .concat(Object.keys(this.nonTradable))
+            .filter(sku => sku.startsWith(partialSku));
+
+        let results = [];
+
+        if (tradableOnly) {
+            results = matchingSKUs.map(sku => this.tradable[sku]).flat();
+        } else {
+            results = matchingSKUs
+                .map(sku => {
+                    const tradableItems = (this.tradable[sku] || []).map(item => item?.id);
+                    const nonTradableItems = (this.nonTradable[sku] || []).map(item => item?.id);
+                    return nonTradableItems.concat(tradableItems);
+                })
+                .flat();
+        }
+
+        return results;
     }
 
     getAmount({
