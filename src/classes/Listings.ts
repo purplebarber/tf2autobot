@@ -795,7 +795,7 @@ export default class Listings {
     }
 
     marginCheck(match: Entry): boolean {
-        const idealPercentage = 1.2;
+        const idealPercentage = 1.1;
 
         if (match === null) {
             return false;
