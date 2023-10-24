@@ -920,10 +920,6 @@ export default class ManagerCommands {
 
         this.bot.checkForUpdates
             .then(async ({ hasNewVersion, newVersionIsMajor }) => {
-                if (!hasNewVersion) {
-                    return this.bot.sendMessage(steamID, 'You are running the latest version of TF2Autobot!');
-                }
-
                 if (newVersionIsMajor) {
                     return this.bot.sendMessage(
                         steamID,
