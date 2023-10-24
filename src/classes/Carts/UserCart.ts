@@ -519,10 +519,22 @@ export default class UserCart extends Cart {
                 continue;
             }
 
+            let findByPartialSku = false;
+            const item_object = SKU.fromString(sku);
+            if (item_object.quality == 5 && !item_object.effect) {
+                findByPartialSku = true;
+            }
+
             let alteredMessage: string;
 
             let amount = this.getTheirCount(sku);
-            const theirAssetids = theirInventory.findBySKU(sku, true);
+            let theirAssetids: string[];
+
+            if (findByPartialSku) {
+                theirAssetids = theirInventory.findByPartialSku(sku, true);
+            } else {
+                theirAssetids = theirInventory.findBySKU(sku, true);
+            }
             const theirAssetidsCount = theirAssetids.length;
 
             if (amount > theirAssetidsCount) {

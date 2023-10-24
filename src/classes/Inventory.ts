@@ -195,6 +195,13 @@ export default class Inventory {
         return nonTradable.concat(tradable).slice(0);
     }
 
+    findByPartialSku(partialSku: string, tradableOnly = true): string[] {
+        const skus = tradableOnly
+            ? Object.keys(this.tradable)
+            : Object.keys(this.tradable).concat(Object.keys(this.nonTradable));
+        return skus.filter(sku => sku.startsWith(partialSku));
+    }
+
     getAmount({
         priceKey,
         includeNonNormalized,
