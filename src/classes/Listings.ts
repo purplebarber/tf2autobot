@@ -14,7 +14,6 @@ import ListingManager from '@tf2autobot/bptf-listings';
 import getAttachmentName from '../lib/tools/getAttachmentName';
 import filterAxiosError from '@tf2autobot/filter-axios-error';
 import SKU from '@tf2autobot/tf2-sku';
-import
 
 /**
  * used when remove all listings has failed once
