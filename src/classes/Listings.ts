@@ -14,6 +14,7 @@ import ListingManager from '@tf2autobot/bptf-listings';
 import getAttachmentName from '../lib/tools/getAttachmentName';
 import filterAxiosError from '@tf2autobot/filter-axios-error';
 import SKU from '@tf2autobot/tf2-sku';
+import
 
 /**
  * used when remove all listings has failed once
@@ -795,7 +796,13 @@ export default class Listings {
     }
 
     marginCheck(match: Entry): boolean {
-        const idealPercentage = 1.2;
+        const idealDifference = {
+            Unusual: 1.2, // 20%
+            Unique: 1.1, // 10%, only calculated if item >5 keys
+            Strange: 1.1, // 10%, only calculated if item >5 keys
+            Australium: 1.15, // 15%
+            Killstreak: 1.15 // 15%
+        };
 
         if (match === null) {
             return false;
@@ -808,28 +815,60 @@ export default class Listings {
 
         const itemObject = SKU.fromString(match.sku);
 
-        // only include unusuals
-        if (itemObject.quality != 5) {
-            return true;
-        }
-
-        // exclude generic unusuals
-        if (itemObject.effect == null) {
-            return true;
-        }
-
-        // exclude unusuals under 10 keys
-        if (match.sell.keys < 10) {
-            return true;
-        }
-
         const keyPrice = this.bot.pricelist.getKeyPrice.metal;
         const buyPrice = match.buy.toValue(keyPrice);
         const sellPrice = match.sell.toValue(keyPrice);
         const percentageDifference = sellPrice / buyPrice;
 
-        // return true if the percentage difference is greater than or equal to the ideal percentage
-        return percentageDifference >= idealPercentage;
+        switch (itemObject.quality) {
+            case 5: // unusual
+                // Exclude generic unusuals
+                if (itemObject.effect == null) {
+                    return true;
+                }
+
+                // Exclude unusuals under 10 keys
+                if (match.sell.keys < 10) {
+                    return true;
+                }
+
+                return percentageDifference >= idealDifference.Unusual;
+
+            case 11: // strange
+                // australiums
+                if (itemObject.australium == true) {
+                    return percentageDifference >= idealDifference.Australium;
+                }
+
+                // killstreaks
+                if (itemObject.killstreak > 0) {
+                    return percentageDifference >= idealDifference.Killstreak;
+                }
+
+                // Exclude items under 5 keys
+                if (match.sell.keys < 5) {
+                    return true;
+                }
+
+                return percentageDifference >= idealDifference.Strange;
+
+            case 6: // unique
+                // killstreaks
+                if (itemObject.killstreak > 0) {
+                    return percentageDifference >= idealDifference.Killstreak;
+                }
+
+                // Exclude items under 5 keys
+                if (match.sell.keys < 5) {
+                    return true;
+                }
+
+                return percentageDifference >= idealDifference.Unique;
+
+            default:
+                return true;
+        }
+
     }
 }
 
