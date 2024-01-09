@@ -1392,12 +1392,7 @@ export default class Pricelist extends EventEmitter {
     }
 
     private scheduleAutoUpdateOldPrices(): void {
-        let initialDelayMs = this.maxAge * 1000;
-
-        if (this.maxAge <= 3660) {
-            initialDelayMs = 3660 * 1000;
-            log.debug('Max age is less than 3660 seconds, setting to 3660 seconds (1 hour + 60 seconds)');
-        }
+        const initialDelayMs = 1860; // 31 minutes
 
         // Schedule first update after initialDelayMs
         setTimeout(() => {
