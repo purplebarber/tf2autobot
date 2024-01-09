@@ -797,8 +797,8 @@ export default class Listings {
     marginCheck(match: Entry): boolean {
         const idealDifference = {
             Unusual: 1.2, // 20%
-            Unique: 1.1, // 10%, only calculated if item >5 keys
-            Strange: 1.1, // 10%, only calculated if item >5 keys
+            Unique: 1.1, // 10%, only calculated if item >1 keys
+            Strange: 1.1, // 10%, only calculated if item >1 keys
             Australium: 1.15, // 15%
             Killstreak: 1.15 // 15%
         };
@@ -845,7 +845,7 @@ export default class Listings {
                 }
 
                 // Exclude items under 5 keys
-                if (match.sell.keys < 5) {
+                if (match.sell.keys < 1) {
                     return true;
                 }
 
@@ -857,8 +857,8 @@ export default class Listings {
                     return percentageDifference >= idealDifference.Killstreak;
                 }
 
-                // Exclude items under 5 keys
-                if (match.sell.keys < 5) {
+                // Exclude items under 1 keys
+                if (match.sell.keys < 1) {
                     return true;
                 }
 
