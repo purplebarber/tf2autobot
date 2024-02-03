@@ -1259,8 +1259,13 @@ export default class Pricelist extends EventEmitter {
                 // If the item is partially priced, or the new sell value is less than or equal to the current buying value, or the buying value has changed
                 if (match.isPartialPriced || isNegativeDiff || isBuyingChanged) {
                     // If the new buy value is greater than the current buying value, we can sell the item immediately for profit
-                    if (newBuyValue > currBuyingValue * 1.1 && newBuyValue > 9 && newBuyValue < keyPrice * 8) {
-                        log.debug('ppu - update selling price to sell immediately for profit');
+                    if (
+                        newBuyValue > currBuyingValue * 1.1 &&
+                        newBuyValue >= 20 &&
+                        newBuyValue < keyPrice * 8 &&
+                        match.sku
+                    ) {
+                        log.debug(`ppu - update selling price of ${match.sku} to sell immediately for profit`);
                         // Update the selling price with the new sell price
                         match.sell = Currencies.toCurrencies(newBuyValue - 1, keyPrice);
                         // If the new sell value is greater than the current buying value or the current selling value
