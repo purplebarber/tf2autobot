@@ -1260,6 +1260,7 @@ export default class Pricelist extends EventEmitter {
                 if (match.isPartialPriced || isNegativeDiff || isBuyingChanged) {
                     // If the new buy value is greater than the current buying value, we can sell the item immediately for profit
                     if (
+                        match.isPartialPriced &&
                         newBuyValue > currBuyingValue * 1.1 &&
                         newBuyValue >= 20 &&
                         newBuyValue < keyPrice * 8 &&
