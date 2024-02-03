@@ -1239,36 +1239,57 @@ export default class Pricelist extends EventEmitter {
             // https://github.com/TF2Autobot/tf2autobot/pull/520
 
             if (ppu.enable && isInStock && isNotExceedThreshold && isNotExcluded && maxIsOne) {
+                // Get current key price
                 const keyPrice = this.getKeyPrice.metal;
 
+                // Calculate the new buy and sell value
                 const newBuyValue = newPrices.buy.toValue(keyPrice);
                 const newSellValue = newPrices.sell.toValue(keyPrice);
 
                 // TODO: Use last bought prices instead of current buying prices
+                // Get the current buying and selling value
                 const currBuyingValue = match.buy.toValue(keyPrice);
                 const currSellingValue = match.sell.toValue(keyPrice);
 
+                // Check if the new sell value is less than or equal to the current buying value
                 const isNegativeDiff = newSellValue - currBuyingValue <= 0;
+                // Check if the current buying value is different from the new buying value
                 const isBuyingChanged = currBuyingValue !== newBuyValue;
 
+                // If the item is partially priced, or the new sell value is less than or equal to the current buying value, or the buying value has changed
                 if (match.isPartialPriced || isNegativeDiff || isBuyingChanged) {
-                    if (newSellValue > currBuyingValue || newSellValue > currSellingValue) {
+                    // If the new buy value is greater than the current buying value, we can sell the item immediately for profit
+                    if (newBuyValue > currBuyingValue * 1.1 && newBuyValue > 9 && newBuyValue < keyPrice * 8) {
+                        log.debug('ppu - update selling price to sell immediately for profit');
+                        // Update the selling price with the new sell price
+                        match.sell = Currencies.toCurrencies(newBuyValue - 1, keyPrice);
+                        // If the new sell value is greater than the current buying value or the current selling value
+                    } else if (newSellValue > currBuyingValue || newSellValue > currSellingValue) {
                         log.debug('ppu - update selling price with the latest price');
+                        // Update the selling price with the new sell price
                         match.sell = newPrices.sell;
                     } else {
                         log.debug('ppu - update selling price with minimum profit of 1 scrap');
+                        // Update the selling price with the current buying value plus 1 scrap
                         match.sell = Currencies.toCurrencies(currBuyingValue + 1, keyPrice);
                     }
 
+                    // Set the item as partially priced
                     match.isPartialPriced = true;
+                    // Indicate that the prices have changed
                     pricesChanged = true;
 
+                    // Generate a message for the partial price update
                     const msg = this.generatePartialPriceUpdateMsg(oldPrice, match, newPrices);
 
+                    // If sending alerts is enabled and partial price updates should trigger an alert
                     if (opt.sendAlert.enable && opt.sendAlert.partialPrice.onUpdate) {
+                        // If the Discord webhook alert is enabled
                         if (this.isDwAlertEnabled) {
+                            // Send an alert with the 'isPartialPriced' event, the bot, and the message
                             sendAlert('isPartialPriced', this.bot, msg);
                         } else {
+                            // Otherwise, send a message to the admins with the partial price update message
                             this.bot.messageAdmins('Partial price update\n\n' + msg, []);
                         }
                     }
