@@ -1263,7 +1263,8 @@ export default class Pricelist extends EventEmitter {
                         match.isPartialPriced &&
                         newBuyValue > currBuyingValue * 1.1 &&
                         newBuyValue >= 20 &&
-                        newBuyValue < keyPrice * 8 &&
+                        newBuyValue < keyPrice * 4 &&
+                        newSellValue < keyPrice * 4 &&
                         match.sku
                     ) {
                         log.debug(`ppu - update selling price of ${match.sku} to sell immediately for profit`);
