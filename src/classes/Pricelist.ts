@@ -1413,7 +1413,7 @@ export default class Pricelist extends EventEmitter {
     }
 
     private scheduleAutoUpdateOldPrices(): void {
-        const initialDelayMs = 1860; // 31 minutes
+        const initialDelayMs = 1860000; // 31 minutes
 
         // Schedule first update after initialDelayMs
         setTimeout(() => {
