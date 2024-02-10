@@ -33,6 +33,15 @@ export default class CustomPricerSocketManager {
     init(): void {
         this.shutDown();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
+
+        this.url.replace('http://', 'ws://').replace('https://', 'wss://')
+
+        if (this.url.includes('?')) {
+            this.url += `&token=${this.key}`;
+        } else {
+            this.url += `?token=${this.key}`;
+        }
+
         this.socket = io(this.url, {
             forceNew: true,
             autoConnect: false,
