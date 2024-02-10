@@ -14,6 +14,11 @@ export default class CustomPricerSocketManager {
 
         this.url.replace('http://', 'ws://').replace('https://', 'wss://');
 
+        if (this.url.endsWith('/')) {
+            this.url = this.url.slice(0, -1);
+        }
+        this.url += '/ws';
+
         if (this.url.includes('?')) {
             this.url += `&token=${this.key}`;
         } else {
