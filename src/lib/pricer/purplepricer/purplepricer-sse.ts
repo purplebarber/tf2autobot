@@ -1,11 +1,11 @@
 import { GetItemPriceResponse, PricerOptions } from 'src/classes/IPricer';
 import log from '../../../lib/logger';
-import EventSource from 'eventsource';
+import ReconnectingEventSource from 'reconnecting-eventsource';
 
 export type EventBasedPriceUpdate = GetItemPriceResponse;
 
 export default class EventSourceHandler {
-    private sse?: EventSource;
+    private sse?: ReconnectingEventSource;
 
     private options: PricerOptions;
 
@@ -18,7 +18,7 @@ export default class EventSourceHandler {
             throw new Error('No pricer API token provided!');
         }
         const url = `${this.options.pricerUrl}/sse?token=${encodeURIComponent(this.options.pricerApiToken)}`;
-        this.sse = new EventSource(url);
+        this.sse = new ReconnectingEventSource(url);
     }
 
     bindEvents(): void {
