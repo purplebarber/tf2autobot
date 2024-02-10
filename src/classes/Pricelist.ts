@@ -1258,6 +1258,7 @@ export default class Pricelist extends EventEmitter {
 
                 // If the item is partially priced, or the new sell value is less than or equal to the current buying value, or the buying value has changed
                 if (match.isPartialPriced || isNegativeDiff || isBuyingChanged) {
+                    if (newSellValue > currBuyingValue || newSellValue > currSellingValue) {
                         log.debug('ppu - update selling price with the latest price');
                         // Update the selling price with the new sell price
                         match.sell = newPrices.sell;
