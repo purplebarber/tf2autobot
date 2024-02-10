@@ -18,12 +18,7 @@ export default class EventSourceHandler {
             throw new Error('No pricer API token provided!');
         }
         const url = `${this.options.pricerUrl}/sse?token=${encodeURIComponent(this.options.pricerApiToken)}`;
-        this.sse = new EventSource(url, {
-            onerror: () => {
-                log.error('EventSource error: Reconnecting in 5 seconds...');
-                setTimeout(() => this.connect(), 5000);
-            }
-        });
+        this.sse = new EventSource(url);
     }
 
     bindEvents(): void {
