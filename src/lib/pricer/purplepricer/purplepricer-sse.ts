@@ -1,6 +1,7 @@
 import { GetItemPriceResponse, PricerOptions } from 'src/classes/IPricer';
 import log from '../../../lib/logger';
 import ReconnectingEventSource from 'reconnecting-eventsource';
+import EventSource from 'eventsource';
 
 export type EventBasedPriceUpdate = GetItemPriceResponse;
 
