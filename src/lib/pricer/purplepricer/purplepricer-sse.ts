@@ -19,7 +19,7 @@ export default class EventSourceHandler {
             throw new Error('No pricer API token provided!');
         }
         const url = `${this.options.pricerUrl}/sse?token=${encodeURIComponent(this.options.pricerApiToken)}`;
-        this.sse = new ReconnectingEventSource(url);
+        this.sse = new ReconnectingEventSource(url, {eventSourceClass: EventSource});
     }
 
     bindEvents(): void {
