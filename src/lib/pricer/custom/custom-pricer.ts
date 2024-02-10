@@ -1,13 +1,21 @@
-import Currencies from '@tf2autobot/tf2-currencies';
-import CustomPricerSocketManager from './custom-pricer-socket-manager';
+import Currencies from "@tf2autobot/tf2-currencies";
+import CustomPricerSocketManager from "./custom-pricer-socket-manager";
 import IPricer, {
     GetItemPriceResponse,
     GetPricelistResponse,
     Item,
     PricerOptions,
     RequestCheckResponse
-} from '../../../classes/IPricer';
-import CustomPricerApi, { CustomPricesGetItemPriceResponse, CustomPricesItemMessageEvent } from './custom-pricer-api';
+} from "../../../classes/IPricer";
+import CustomPricerApi, { CustomPricesGetItemPriceResponse, CustomPricesItemMessageEvent } from "./custom-pricer-api";
+import log from "../../logger";
+import { PricesTfItem } from "../pricestf/prices-tf-api";
+
+
+export interface PricerEventThing {
+    event: string;
+    data?: PricesTfItem;
+}
 
 export default class CustomPricer implements IPricer {
     private socketManager: CustomPricerSocketManager;
@@ -93,10 +101,21 @@ export default class CustomPricer implements IPricer {
         }
     }
 
+    parseWSEvent(raw: string): PricerEventThing {
+        return JSON.parse(raw) as PricerEventThing;
+    }
+
     bindHandlePriceEvent(onPriceChange: (item: GetItemPriceResponse) => void): void {
-        this.socketManager.on('price', (data: CustomPricesGetItemPriceResponse) => {
-            const item = this.parsePricesGetItemPriceResponse(data);
-            onPriceChange(item);
+        this.socketManager.on('message', (message: MessageEvent) => {
+            try {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                const wsData = this.parseWSEvent(message.data);
+                if (wsData.event === 'price') {
+                    onPriceChange(wsData.data);
+                }
+            } catch (e) {
+                log.error(e as Error);
+            }
         });
     }
 }
