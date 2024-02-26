@@ -5,8 +5,11 @@ import * as Events from 'reconnecting-websocket/events';
 
 export default class CustomPricerSocketManager {
     private ws: ReconnectingWebSocket;
+    private lastActivity: Date;
 
-    constructor(public url: string, public key?: string) {}
+    constructor(public url: string, public key?: string) {
+        this.lastActivity = new Date();
+    }
 
     init(): void {
         this.shutDown();
@@ -36,6 +39,12 @@ export default class CustomPricerSocketManager {
         if (this.ws.readyState === WS.OPEN) {
             log.debug('Custom pricer is connected.');
         }
+
+        this.ws.addEventListener('price', () => {
+            this.lastActivity = new Date();
+        });
+
+        setInterval(() => this.checkActivity(), 30 * 60 * 1000);
     }
 
     connect(): void {
@@ -51,6 +60,15 @@ export default class CustomPricerSocketManager {
             // Why no removeAllEventListener ws? :(
             this.ws.close();
             this.ws = undefined;
+        }
+    }
+
+    checkActivity(): void {
+        const now = new Date();
+        const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
+
+        if (this.lastActivity < thirtyMinutesAgo) {
+            this.connect();
         }
     }
 
