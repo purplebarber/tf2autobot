@@ -5,7 +5,8 @@ import * as Events from 'reconnecting-websocket/events';
 
 export default class CustomPricerSocketManager {
     private ws: ReconnectingWebSocket;
-    private lastActivity: Date;
+
+    public lastActivity: Date;
 
     constructor(public url: string, public key?: string) {
         this.lastActivity = new Date();
@@ -39,11 +40,6 @@ export default class CustomPricerSocketManager {
         if (this.ws.readyState === WS.OPEN) {
             log.debug('Custom pricer is connected.');
         }
-
-        this.ws.addEventListener('price', () => {
-            this.lastActivity = new Date();
-        });
-
         setInterval(() => this.checkActivity(), 30 * 60 * 1000);
     }
 

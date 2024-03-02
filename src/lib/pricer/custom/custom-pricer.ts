@@ -112,6 +112,7 @@ export default class CustomPricer implements IPricer {
                 const wsData = this.parseWSEvent(message.data);
                 if (wsData.event === 'price') {
                     onPriceChange(wsData.data);
+                    this.socketManager.lastActivity = new Date();
                 }
             } catch (e) {
                 log.error(e as Error);
