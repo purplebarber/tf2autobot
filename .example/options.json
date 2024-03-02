@@ -259,6 +259,7 @@
     "details": {
         "buy": "I am buying your %name% for %price%, I have %current_stock% / %max_stock%.",
         "sell": "I am selling my %name% for %price%, I am selling %amount_trade%.",
+        "unusualSell": "I am selling my %name% for %price%, I am selling %amount_trade%.",
         "showAutokeys": true,
         "showBoldText": {
             "onPrice": false,

@@ -1072,6 +1072,10 @@ export const optionsSchema: jsonschema.Schema = {
                     type: 'string',
                     maxLength: 180
                 },
+                unusualSell: {
+                    type: 'string',
+                    maxLength: 180
+                },
                 showAutokeys: {
                     type: 'boolean'
                 },
