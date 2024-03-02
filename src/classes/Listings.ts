@@ -39,7 +39,7 @@ export default class Listings {
         return this.bot.options.miscSettings.createListings.enable && !this.bot.isHalted;
     }
 
-    private templates: { buy: string; sell: string };
+    private templates: { buy: string; sell: string; unusualSell: string };
 
     constructor(private readonly bot: Bot) {
         this.bot = bot;
@@ -47,7 +47,8 @@ export default class Listings {
             buy:
                 this.bot.options.details.buy ||
                 'I am buying your %name% for %price%, I have %current_stock% / %max_stock%.',
-            sell: this.bot.options.details.sell || 'I am selling my %name% for %price%, I am selling %amount_trade%.'
+            sell: this.bot.options.details.sell || 'I am selling my %name% for %price%, I am selling %amount_trade%.',
+            unusualSell: this.bot.options.details.unusualSell || 'Selling for %price%.'
         };
     }
 
@@ -761,6 +762,11 @@ export default class Listings {
                 details = '[𝐀𝐮𝐭𝐨𝐤𝐞𝐲𝐬] ' + details;
             }
             //
+        } else if (entry.sku.includes(';5') && key === 'sell') {
+            // this part checks if the item is an unusual and is a sell listing.
+            details = replaceDetails(this.templates['unusualSell'], entry, key)
+                .replace(/%keyPrice%/g, 'Key rate: ' + keyPrice.toString() + '/key')
+                .replace(/%uses%/g, '');
         } else {
             // else if nothing above, then just use template/in config and replace every parameters.
             details = replaceDetails(this.templates[key], entry, key)
@@ -867,7 +873,6 @@ export default class Listings {
             default:
                 return true;
         }
-
     }
 }
 
