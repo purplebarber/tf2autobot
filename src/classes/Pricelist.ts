@@ -10,6 +10,7 @@ import log from '../lib/logger';
 import validator from '../lib/validator';
 import { sendWebHookPriceUpdateV1, sendAlert, sendFailedPriceUpdate } from './DiscordWebhook/export';
 import IPricer, { GetItemPriceResponse, Item } from './IPricer';
+import getMostRecentPurchase, { RecentPurchase, ItemStatsValue } from '../lib/tools/recentBuy';
 
 export enum PricelistChangedSource {
     Command = 'COMMAND',
@@ -1217,6 +1218,27 @@ export default class Pricelist extends EventEmitter {
             const buyChangesValue = Math.round(newBuyValue - oldBuyValue);
             const sellChangesValue = Math.round(newSellValue - oldSellValue);
 
+            let recentPurchaseValue = 0;
+            let recentPurchaseTime = 0;
+
+            getMostRecentPurchase(this.bot, match.sku)
+                .then((mostRecentPurchase: RecentPurchase | null) => {
+                    if (mostRecentPurchase !== null) {
+                        const recentPurchaseMetal = mostRecentPurchase.itemStatsValue.metal;
+                        const recentPurchaseKeys = mostRecentPurchase.itemStatsValue.keys;
+                        const recentPurchaseCurrencies = new Currencies({
+                            keys: recentPurchaseKeys,
+                            metal: recentPurchaseMetal
+                        });
+                        recentPurchaseValue = recentPurchaseCurrencies.toValue(keyPrice);
+                        recentPurchaseTime = mostRecentPurchase.time;
+                    }
+                })
+                .catch(error => {
+                    log.warn('Failed to get most recent purchase:', error);
+                    recentPurchaseValue = 0;
+                    recentPurchaseTime = 0;
+                });
             if (buyChangesValue === 0 && sellChangesValue === 0) {
                 // Ignore
                 return;
@@ -1258,7 +1280,24 @@ export default class Pricelist extends EventEmitter {
 
                 // If the item is partially priced, or the new sell value is less than or equal to the current buying value, or the buying value has changed
                 if (match.isPartialPriced || isNegativeDiff || isBuyingChanged) {
-                    if (newSellValue > currBuyingValue || newSellValue > currSellingValue) {
+                    // If the new buy value is greater than the current buying value, we can sell the item immediately for profit
+                    if (
+                        match.isPartialPriced &&
+                        newBuyValue > currBuyingValue * 1.1 &&
+                        newBuyValue >= 20 &&
+                        newBuyValue < keyPrice * 4 &&
+                        newSellValue < keyPrice * 4 &&
+                        match.sku &&
+                        recentPurchaseValue > 0 &&
+                        recentPurchaseValue + 1 < newBuyValue &&
+                        recentPurchaseTime > 0 &&
+                        recentPurchaseTime + 3600 * 24 * 3 < data.time // if the item was bought more than 3 days ago
+                    ) {
+                        log.debug(`ppu - quickselling ${match.sku} for profit`);
+                        // Update the selling price with the new sell price
+                        match.sell = Currencies.toCurrencies(newBuyValue - 1, keyPrice);
+                        // If the new sell value is greater than the current buying value or the current selling value
+                    } else if (newSellValue > currBuyingValue || newSellValue > currSellingValue) {
                         log.debug('ppu - update selling price with the latest price');
                         // Update the selling price with the new sell price
                         match.sell = newPrices.sell;
