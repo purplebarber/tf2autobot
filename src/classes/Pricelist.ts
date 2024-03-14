@@ -1288,6 +1288,7 @@ export default class Pricelist extends EventEmitter {
                         newBuyValue < keyPrice * 4 &&
                         newSellValue < keyPrice * 4 &&
                         match.sku &&
+                        !match.sku.includes(';5') && //exclude unusuals
                         recentPurchaseValue > 0 &&
                         recentPurchaseValue + 1 < newBuyValue &&
                         recentPurchaseTime > 0 &&
