@@ -1303,7 +1303,9 @@ export default class Pricelist extends EventEmitter {
                         // Update the selling price with the new sell price
                         match.sell = newPrices.sell;
                     } else {
-                        log.debug('ppu - update selling price with minimum profit of 1 scrap');
+                        log.debug(
+                            `ppu - update selling price with minimum profit of 1 scrap - bought for ${recentPurchaseValue}`
+                        );
                         // Update the selling price with the current buying value plus 1 scrap
                         match.sell = Currencies.toCurrencies(currBuyingValue + 1, keyPrice);
                     }
