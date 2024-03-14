@@ -1234,7 +1234,6 @@ export default class Pricelist extends EventEmitter {
                         });
                         recentPurchaseValue = recentPurchaseCurrencies.toValue(keyPrice);
                         recentPurchaseTime = recentTimestamp;
-                        log.debug('We have a recent purchase:', { recentPurchaseValue, recentPurchaseTime });
                     }
                 })
                 .catch(error => {
