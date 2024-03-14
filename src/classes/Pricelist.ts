@@ -1239,7 +1239,6 @@ export default class Pricelist extends EventEmitter {
                     }
                 })
                 .catch(error => {
-                    log.warn('Failed to get item stats:', error);
                     recentPurchaseValue = 0;
                     recentPurchaseTime = 0;
                 });
