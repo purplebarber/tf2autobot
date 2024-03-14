@@ -1218,28 +1218,28 @@ export default class Pricelist extends EventEmitter {
             const buyChangesValue = Math.round(newBuyValue - oldBuyValue);
             const sellChangesValue = Math.round(newSellValue - oldSellValue);
 
-            let recentPurchaseValue = 0;
-            let recentPurchaseTime = 0;
-
-            itemStats(this.bot, match.sku)
-                .then(itemStatsValues => {
-                    const boughtStats = itemStatsValues.bought;
-                    // find the most recent purchase
-                    const recentTimestamp = Math.max(...Object.keys(boughtStats).map(Number));
-                    const bought = boughtStats[recentTimestamp];
-                    if (bought && bought.count === 1) {
-                        const recentPurchaseCurrencies = new Currencies({
-                            keys: bought.keys,
-                            metal: bought.metal
-                        });
-                        recentPurchaseValue = recentPurchaseCurrencies.toValue(keyPrice);
-                        recentPurchaseTime = recentTimestamp;
-                    }
-                })
-                .catch(error => {
-                    recentPurchaseValue = 0;
-                    recentPurchaseTime = 0;
-                });
+            // let recentPurchaseValue = 0;
+            // let recentPurchaseTime = 0;
+            //
+            // itemStats(this.bot, match.sku)
+            //     .then(itemStatsValues => {
+            //         const boughtStats = itemStatsValues.bought;
+            //         // find the most recent purchase
+            //         const recentTimestamp = Math.max(...Object.keys(boughtStats).map(Number));
+            //         const bought = boughtStats[recentTimestamp];
+            //         if (bought && bought.count === 1) {
+            //             const recentPurchaseCurrencies = new Currencies({
+            //                 keys: bought.keys,
+            //                 metal: bought.metal
+            //             });
+            //             recentPurchaseValue = recentPurchaseCurrencies.toValue(keyPrice);
+            //             recentPurchaseTime = recentTimestamp;
+            //         }
+            //     })
+            //     .catch(error => {
+            //         recentPurchaseValue = 0;
+            //         recentPurchaseTime = 0;
+            //     });
             if (buyChangesValue === 0 && sellChangesValue === 0) {
                 // Ignore
                 return;
@@ -1282,30 +1282,28 @@ export default class Pricelist extends EventEmitter {
                 // If the item is partially priced, or the new sell value is less than or equal to the current buying value, or the buying value has changed
                 if (match.isPartialPriced || isNegativeDiff || isBuyingChanged) {
                     // If the new buy value is greater than the current buying value, we can sell the item immediately for profit
-                    if (
-                        match.isPartialPriced &&
-                        newBuyValue > currBuyingValue * 1.1 &&
-                        newBuyValue >= 20 &&
-                        newBuyValue < keyPrice * 4 &&
-                        newSellValue < keyPrice * 4 &&
-                        match.sku &&
-                        !match.sku.includes(';5') && //exclude unusuals
-                        recentPurchaseValue > 0 &&
-                        recentPurchaseValue + 1 < newBuyValue &&
-                        recentPurchaseTime > 0
-                    ) {
-                        log.debug(`ppu - quickselling ${match.sku} for profit`);
-                        // Update the selling price with the new sell price
-                        match.sell = Currencies.toCurrencies(newBuyValue - 1, keyPrice);
-                        // If the new sell value is greater than the current buying value or the current selling value
-                    } else if (newSellValue > currBuyingValue || newSellValue > currSellingValue) {
+                    // if (
+                    //     match.isPartialPriced &&
+                    //     newBuyValue > currBuyingValue * 1.1 &&
+                    //     newBuyValue >= 20 &&
+                    //     newBuyValue < keyPrice * 4 &&
+                    //     newSellValue < keyPrice * 4 &&
+                    //     match.sku &&
+                    //     !match.sku.includes(';5') && //exclude unusuals
+                    //     recentPurchaseValue > 0 &&
+                    //     recentPurchaseValue + 1 < newBuyValue &&
+                    //     recentPurchaseTime > 0
+                    // ) {
+                    //     log.debug(`ppu - quickselling ${match.sku} for profit`);
+                    //     // Update the selling price with the new sell price
+                    //     match.sell = Currencies.toCurrencies(newBuyValue - 1, keyPrice);
+                    // If the new sell value is greater than the current buying value or the current selling value
+                    if (newSellValue > currBuyingValue || newSellValue > currSellingValue) {
                         log.debug('ppu - update selling price with the latest price');
                         // Update the selling price with the new sell price
                         match.sell = newPrices.sell;
                     } else {
-                        log.debug(
-                            `ppu - update selling price with minimum profit of 1 scrap - bought for ${recentPurchaseValue}`
-                        );
+                        log.debug(`ppu - update selling price with minimum profit of 1 scrap`);
                         // Update the selling price with the current buying value plus 1 scrap
                         match.sell = Currencies.toCurrencies(currBuyingValue + 1, keyPrice);
                     }
