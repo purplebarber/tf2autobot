@@ -1227,15 +1227,14 @@ export default class Pricelist extends EventEmitter {
                     // find the most recent purchase
                     const recentTimestamp = Math.max(...Object.keys(boughtStats).map(Number));
                     const bought = boughtStats[recentTimestamp];
-                    if (bought) {
+                    if (bought && bought.count === 1) {
                         const recentPurchaseCurrencies = new Currencies({
-                            keys: bought.keys || 0,
-                            metal: bought.metal || 0
+                            keys: bought.keys,
+                            metal: bought.metal
                         });
                         recentPurchaseValue = recentPurchaseCurrencies.toValue(keyPrice);
-
-                        // Assuming there's a way to get a timestamp from boughtStats
                         recentPurchaseTime = recentTimestamp;
+                        log.debug('We have a recent purchase:', { recentPurchaseValue, recentPurchaseTime });
                     }
                 })
                 .catch(error => {
