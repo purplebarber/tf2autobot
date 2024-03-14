@@ -10,7 +10,7 @@ import log from '../lib/logger';
 import validator from '../lib/validator';
 import { sendWebHookPriceUpdateV1, sendAlert, sendFailedPriceUpdate } from './DiscordWebhook/export';
 import IPricer, { GetItemPriceResponse, Item } from './IPricer';
-import getMostRecentPurchase, { RecentPurchase, ItemStatsValue } from '../lib/tools/recentBuy';
+import itemStats from '../lib/tools/itemStats';
 
 export enum PricelistChangedSource {
     Command = 'COMMAND',
@@ -1221,21 +1221,25 @@ export default class Pricelist extends EventEmitter {
             let recentPurchaseValue = 0;
             let recentPurchaseTime = 0;
 
-            getMostRecentPurchase(this.bot, match.sku)
-                .then((mostRecentPurchase: RecentPurchase | null) => {
-                    if (mostRecentPurchase !== null) {
-                        const recentPurchaseMetal = mostRecentPurchase.itemStatsValue.metal;
-                        const recentPurchaseKeys = mostRecentPurchase.itemStatsValue.keys;
+            itemStats(this.bot, match.sku)
+                .then(itemStatsValues => {
+                    const boughtStats = itemStatsValues.bought;
+                    // find the most recent purchase
+                    const recentTimestamp = Math.max(...Object.keys(boughtStats).map(Number));
+                    const bought = boughtStats[recentTimestamp];
+                    if (bought) {
                         const recentPurchaseCurrencies = new Currencies({
-                            keys: recentPurchaseKeys,
-                            metal: recentPurchaseMetal
+                            keys: bought.keys || 0,
+                            metal: bought.metal || 0
                         });
                         recentPurchaseValue = recentPurchaseCurrencies.toValue(keyPrice);
-                        recentPurchaseTime = mostRecentPurchase.time;
+
+                        // Assuming there's a way to get a timestamp from boughtStats
+                        recentPurchaseTime = recentTimestamp;
                     }
                 })
                 .catch(error => {
-                    log.warn('Failed to get most recent purchase:', error);
+                    log.warn('Failed to get item stats:', error);
                     recentPurchaseValue = 0;
                     recentPurchaseTime = 0;
                 });
@@ -1292,7 +1296,7 @@ export default class Pricelist extends EventEmitter {
                         recentPurchaseValue > 0 &&
                         recentPurchaseValue + 1 < newBuyValue &&
                         recentPurchaseTime > 0 &&
-                        recentPurchaseTime + 3600 * 24 * 3 < data.time // if the item was bought more than 3 days ago
+                        recentPurchaseTime + 3600 * 24 * 3 * 1000 < data.time // if the item was bought more than 3 days ago
                     ) {
                         log.debug(`ppu - quickselling ${match.sku} for profit`);
                         // Update the selling price with the new sell price
