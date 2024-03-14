@@ -1292,8 +1292,7 @@ export default class Pricelist extends EventEmitter {
                         !match.sku.includes(';5') && //exclude unusuals
                         recentPurchaseValue > 0 &&
                         recentPurchaseValue + 1 < newBuyValue &&
-                        recentPurchaseTime > 0 &&
-                        recentPurchaseTime + 3600 * 24 * 3 * 1000 < data.time // if the item was bought more than 3 days ago
+                        recentPurchaseTime > 0
                     ) {
                         log.debug(`ppu - quickselling ${match.sku} for profit`);
                         // Update the selling price with the new sell price
