@@ -1,78 +1,82 @@
-import ReconnectingWebSocket from 'reconnecting-websocket';
-import WS from 'ws';
+import io, { Socket } from 'socket.io-client';
 import log from '../../../lib/logger';
-import * as Events from 'reconnecting-websocket/events';
 
 export default class CustomPricerSocketManager {
-    private ws: ReconnectingWebSocket;
+    public socket: Socket;
 
-    public lastActivity: Date;
+    constructor(public url: string, public key?: string) {}
 
-    constructor(public url: string, public key?: string) {
-        this.lastActivity = new Date();
+    private socketDisconnected(): (reason: string) => void {
+        return reason => {
+            log.debug('Disconnected from socket server', { reason: reason });
+
+            if (reason === 'io server disconnect') {
+                if (!this.isConnecting) {
+                    this.socket.connect();
+                }
+            }
+        };
+    }
+
+    private socketAuthenticated(): () => void {
+        return () => {
+            log.debug('Authenticated with socket server');
+        };
+    }
+
+    private socketConnect(): () => void {
+        return () => {
+            log.debug('Connected to socket server');
+        };
     }
 
     init(): void {
         this.shutDown();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
-
-        this.url.replace('http://', 'ws://').replace('https://', 'wss://');
-
-        if (this.url.endsWith('/')) {
-            this.url = this.url.slice(0, -1);
-        }
-        this.url += '/ws';
-
-        if (this.url.includes('?')) {
-            this.url += `&token=${this.key}`;
-        } else {
-            this.url += `?token=${this.key}`;
-        }
-
-        this.ws = new ReconnectingWebSocket(this.url, [], {
-            WebSocket: WS,
-            maxEnqueuedMessages: 0,
-            startClosed: true
+        this.socket = io(this.url, {
+            forceNew: true,
+            autoConnect: false,
+            auth: {
+                token: this.key
+            }
         });
-        if (this.isConnecting) {
-            log.debug('Custom pricer is connecting...');
-        }
-        if (this.ws.readyState === WS.OPEN) {
-            log.debug('Custom pricer is connected.');
-        }
-        setInterval(() => this.checkActivity(), 30 * 60 * 1000);
-    }
 
-    connect(): void {
-        this.ws.reconnect();
+        this.socket.on('connect', this.socketConnect());
+
+        this.socket.on('authenticated', this.socketAuthenticated());
+
+        this.socket.on('disconnect', this.socketDisconnected());
+
+        this.socket.on('ratelimit', (rateLimit: { limit: number; remaining: number; reset: number }) => {
+            log.debug(`ptf quota: ${JSON.stringify(rateLimit)}`);
+        });
+
+        this.socket.on('blocked', (blocked: { expire: number }) => {
+            log.warn(`Socket blocked. Expires in ${blocked.expire}`);
+        });
+
+        this.socket.on('connect_error', err => {
+            log.warn(`Couldn't connect to socket server`, err);
+        });
     }
 
     get isConnecting(): boolean {
-        return this.ws.readyState === WS.CONNECTING;
+        return this.socket.active;
+    }
+
+    connect(): void {
+        this.socket.connect();
     }
 
     shutDown(): void {
-        if (this.ws) {
-            // Why no removeAllEventListener ws? :(
-            this.ws.close();
-            this.ws = undefined;
+        if (this.socket) {
+            this.socket.removeAllListeners();
+            this.socket.disconnect();
+            this.socket = undefined;
         }
     }
 
-    checkActivity(): void {
-        const now = new Date();
-        const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
-
-        if (this.lastActivity < thirtyMinutesAgo) {
-            this.connect();
-        }
-    }
-
-    send(data: string): void {
-        this.ws.send(data);
-    }
-
-    on<T extends keyof Events.WebSocketEventListenerMap>(name: T, handler: Events.WebSocketEventListenerMap[T]): void {
-        this.ws.addEventListener(name, handler);
+    on(name: string, handler: OmitThisParameter<(T: any) => void>): void {
+        this.socket.on(name, handler);
     }
 }
