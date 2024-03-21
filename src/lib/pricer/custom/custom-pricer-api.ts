@@ -88,7 +88,11 @@ export default class CustomPricerApi {
         };
 
         if (this.apiToken) {
-            options.params = { token: this.apiToken };
+            options.headers = { Authorization: `Token ${this.apiToken}` };
+        }
+
+        if (params) {
+            options.params = params;
         }
 
         if (data) {
@@ -110,15 +114,15 @@ export default class CustomPricerApi {
     }
 
     requestCheck(sku: string): Promise<CustomPricerPricesRequestCheckResponse> {
-        return this.apiRequest('POST', `/items/${sku}`);
+        return this.apiRequest('POST', `/items/${sku}`, { source: 'bptf' });
     }
 
     getPrice(sku: string): Promise<CustomPricesGetItemPriceResponse> {
-        return this.apiRequest('GET', `/items/${sku}`);
+        return this.apiRequest('GET', `/items/${sku}`, { src: 'bptf' });
     }
 
     getPricelist(): Promise<CustomPricesGetPricelistResponse> {
-        return this.apiRequest('GET', '/items');
+        return this.apiRequest('GET', '/items', { src: 'bptf' });
     }
 
     getOptions(): PricerOptions {
