@@ -2184,6 +2184,7 @@ export default interface Options extends JsonOptions {
     steamPassword?: string;
     steamSharedSecret?: string;
     steamIdentitySecret?: string;
+    steamApiKey?: string;
 
     bptfAccessToken?: string;
     bptfApiKey?: string;
@@ -2500,6 +2501,7 @@ export function loadOptions(options?: Options): Options {
         steamPassword: getOption('steamPassword', '', String, incomingOptions),
         steamSharedSecret: getOption('steamSharedSecret', '', String, incomingOptions),
         steamIdentitySecret: getOption('steamIdentitySecret', '', String, incomingOptions),
+        steamApiKey: getOption('steamApiKey', '', String, incomingOptions),
 
         bptfAccessToken: getOption('bptfAccessToken', '', String, incomingOptions),
         bptfApiKey: getOption('bptfApiKey', '', String, incomingOptions),
