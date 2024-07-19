@@ -302,7 +302,7 @@ export default class Commands {
             // Will be called if the message is not starting with the cmd prefix char
             // and the message contains underscores.
             if (message.includes('_')) {
-                const desc = this.bot.helper.getEasyCopyPasteDescriptor(message);
+                const desc = this.bot.getEasyCopyPasteDescriptor(message);
                 this.buyOrSellCommand(steamID, desc.itemName, desc.command as Instant, null, true);
             }
         }

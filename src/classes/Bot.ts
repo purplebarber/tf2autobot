@@ -46,6 +46,8 @@ import filterAxiosError from '@tf2autobot/filter-axios-error';
 import { axiosAbortSignal } from '../lib/helpers';
 import { apiRequest } from '../lib/apiRequest';
 
+import EasyCopyPaste, { TransactionDescriptor } from 'easycopypaste';
+
 export interface SteamTokens {
     refreshToken: string;
     accessToken: string;
@@ -82,6 +84,8 @@ export default class Bot {
     readonly handler: MyHandler;
 
     readonly inventoryGetter: InventoryGetter;
+
+    readonly ecp: EasyCopyPaste;
 
     readonly boundInventoryGetter: (
         steamID: SteamID | string,
@@ -212,6 +216,8 @@ export default class Bot {
             this.admins.push(admin);
         });
 
+
+
         this.itemStatsWhitelist =
             this.options.itemStatsWhitelist.length > 0
                 ? ['76561198013127982'].concat(this.options.itemStatsWhitelist).map(steamID => new SteamID(steamID))
@@ -225,6 +231,16 @@ export default class Bot {
 
         this.inventoryGetter = new InventoryGetter(this);
         this.boundInventoryGetter = this.inventoryGetter.getUserInventoryContents.bind(this.inventoryGetter);
+
+        this.ecp = new EasyCopyPaste();
+    }
+
+    public getEasyCopyPasteString(itemName: string, intent: 'buy' | 'sell'): string {
+        return this.ecp.toEasyCopyPasteString(itemName, intent, false);
+    }
+
+    public getEasyCopyPasteDescriptor(easyCopyPasteString: string): TransactionDescriptor {
+        return this.ecp.fromEasyCopyPasteString(easyCopyPasteString);
     }
 
     isAdmin(steamID: SteamID | string): boolean {
