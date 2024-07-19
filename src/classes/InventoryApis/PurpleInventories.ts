@@ -20,7 +20,7 @@ export default class PurpleInventories extends InventoryApi {
         contextID: string
     ): [string, UnknownDictionaryKnownValues] {
         return [
-          `${this.pricerUrl}/inventory/${steamID64}/${appID}/${contextID}/?token=${this.pricerApiKey}`,
+          `${this.pricerUrl}/inventory/${steamID64}/${appID}/${contextID}?token=${encodeURIComponent(this.pricerApiKey)}`,
             {steamID64, appID, contextID, token: this.pricerApiKey}
         ];
     }
